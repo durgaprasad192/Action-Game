@@ -1,5 +1,6 @@
 import tkinter as tk
 import random
+
 window_width = 600
 window_height = 600
 player_size = 30
@@ -9,11 +10,6 @@ obstacle_speed = 3
 level_up_score = 100
 
 root = tk.Tk()
-
-
-
-
-
 root.title("Enhanced Game")
 
 canvas = tk.Canvas(root, width=window_width, height=window_height)
@@ -26,7 +22,6 @@ player = canvas.create_rectangle(
 )
 
 obstacles = []
-
 score = 0
 level = 1
 score_text = canvas.create_text(10, 10, text=f"Score: {score}", anchor="nw", font=("Arial", 16))
@@ -46,6 +41,15 @@ def move_down(event):
 
 def check_collision():
     player_coords = canvas.bbox(player)
+    
+    # Edge collision check
+    if (player_coords[0] <= 0 or  # left edge
+        player_coords[1] <= 0 or  # top edge
+        player_coords[2] >= window_width or  # right edge
+        player_coords[3] >= window_height):  # bottom edge
+        return True
+    
+    # Obstacle collision check
     for obstacle in obstacles:
         obstacle_coords = canvas.bbox(obstacle)
         if (player_coords[2] > obstacle_coords[0] and player_coords[0] < obstacle_coords[2] and
@@ -71,14 +75,16 @@ def move_obstacles():
         if coords[1] < 0 or coords[3] > window_height:
             canvas.move(obstacle, 0, -random.choice([-obstacle_speed, obstacle_speed]))
     score += 1
+
 def level_up():
-    global level, player_speed, obstacles, score, level_up_score
+    global level, player_speed, score
     if score >= level_up_score * level:
         level += 1
         player_speed += 5
         create_obstacles()
         canvas.itemconfig(level_text, text=f"Level: {level}")
         canvas.itemconfig(score_text, text=f"Score: {score}")
+
 def game_loop():
     global score
     move_obstacles()
@@ -87,10 +93,13 @@ def game_loop():
         canvas.create_text(window_width // 2, window_height // 2, text="Game Over!", font=('Arial', 24), fill='red')
     else:
         root.after(50, game_loop)
+
 root.bind("<Left>", move_left)
 root.bind("<Right>", move_right)
 root.bind("<Up>", move_up)
 root.bind("<Down>", move_down)
+
 create_obstacles()
 game_loop()
+
 root.mainloop()
